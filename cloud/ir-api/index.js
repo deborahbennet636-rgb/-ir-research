@@ -166,7 +166,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       errorDiv.textContent = '';
       
       try {
-        const res = await fetch('/api/analyze', {
+        const res = await fetch('https://cloud1-3gznkj5x063dce04-1415476366.ap-shanghai.app.tcloudbase.com/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ topic, analysisType: type })
