@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国际关系研判与预测系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 登录弹窗 -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h2>欢迎使用系统</h2>
+            <p>请输入您的名字以进入系统</p>
+            <div class="login-form">
+                <input type="text" id="login-username" placeholder="用户名（如：张三）">
+                <input type="text" id="login-name" placeholder="显示名称（可选）">
+                <button class="btn-primary" id="login-btn">进入系统</button>
+            </div>
+            <p class="login-hint">所有用户共享同一个知识库，您可以上传文档供大家使用</p>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">🌍</span>
+                <span class="logo-text">IR Analyzer</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="research">
+                    <span class="nav-icon">📊</span>
+                    <span>研判分析</span>
+                </a>
+                <a href="#" class="nav-item" data-view="documents">
+                    <span class="nav-icon">📚</span>
+                    <span>文档库</span>
+                </a>
+                <a href="#" class="nav-item" data-view="about">
+                    <span class="nav-icon">ℹ️</span>
+                    <span>关于系统</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-stats">
+                <div class="stat-item">
+                    <span class="stat-label">已加载文档</span>
+                    <span class="stat-value" id="doc-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">知识片段</span>
+                    <span class="stat-value" id="chunk-count">0</span>
+                </div>
+            </div>
+            
+            <!-- 用户面板 -->
+            <div class="user-panel" id="user-panel">
+                <div class="user-info" id="user-info" style="display: none;">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-details">
+                        <span class="user-name" id="current-user-name">-</span>
+                        <span class="user-status">已登录</span>
+                    </div>
+                </div>
+                <button class="btn-logout" id="logout-btn" style="display: none;">退出</button>
+            </div>
+            
+            <!-- 贡献者列表 -->
+            <div class="contributors-panel" id="contributors-panel" style="display: none;">
+                <div class="panel-title">👥 贡献者</div>
+                <div class="contributors-list" id="contributors-list"></div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 研判分析视图 -->
+            <section class="view active" id="view-research">
+                <header class="view-header">
+                    <h1>国际关系研判与预测</h1>
+                    <p class="subtitle">基于文献资料的智能分析系统</p>
+                </header>
+
+                <div class="research-container">
+                    <!-- 左侧：输入区域 -->
+                    <div class="input-panel">
+                        <div class="panel-header">
+                            <h2>📝 输入分析主题</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="input-group">
+                                <label>分析类型</label>
+                                <div class="analysis-types">
+                                    <button class="type-btn active" data-type="general">
+                                        <span class="type-icon">📋</span>
+                                        <span>综合分析</span>
+                                    </button>
+                                    <button class="type-btn" data-type="counterterror">
+                                        <span class="type-icon">🛡️</span>
+                                        <span>反恐分析</span>
+                                    </button>
+                                    <button class="type-btn" data-type="security">
+                                        <span class="type-icon">🔒</span>
+                                        <span>国家安全</span>
+                                    </button>
+                                    <button class="type-btn" data-type="trend">
+                                        <span class="type-icon">📈</span>
+                                        <span>趋势研判</span>
+                                    </button>
+                                    <button class="type-btn" data-type="prediction">
+                                        <span class="type-icon">🔮</span>
+                                        <span>趋势预测</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="topic-input">分析主题</label>
+                                <textarea id="topic-input" placeholder="输入分析主题..."></textarea>
+                                <div class="topic-suggestions">
+                                    <label>💡 快捷研究主题：</label>
+                                    <div class="suggestion-tags">
+                                        <span class="suggestion-tag" data-topic="全球反恐合作机制的发展与挑战">全球反恐合作</span>
+                                        <span class="suggestion-tag" data-topic="上海合作组织在反恐中的作用">上合组织反恐</span>
+                                        <span class="suggestion-tag" data-topic="一带一路沿线国家安全风险分析">一带一路安全</span>
+                                        <span class="suggestion-tag" data-topic="国际反恐情报合作机制">反恐情报合作</span>
+                                        <span class="suggestion-tag" data-topic="网络安全与国家反恐能力建设">网络安全反恐</span>
+                                        <span class="suggestion-tag" data-topic="去极端化政策的国际比较研究">去极端化政策</span>
+                                        <span class="suggestion-tag" data-topic="恐怖主义融资防控机制">反恐融资</span>
+                                        <span class="suggestion-tag" data-topic="跨境恐怖主义与边境安全管控">跨境恐怖主义</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label>数据来源</label>
+                                <div class="source-options">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="use-web" checked>
+                                        <span>🌐 自动搜索网络资料</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="use-knowledge" checked>
+                                        <span>📚 使用共享知识库</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button class="btn-primary" id="analyze-btn">
+                                <span class="btn-icon">🔍</span>
+                                开始分析
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：结果展示 -->
+                    <div class="result-panel">
+                        <div class="panel-header">
+                            <h2>📊 分析结果</h2>
+                            <button class="btn-icon-only" id="clear-btn" title="清空结果">🗑️</button>
+                        </div>
+                        <div class="panel-body">
+                            <div id="result-placeholder" class="placeholder">
+                                <div class="placeholder-icon">📊</div>
+                                <p>请在上方输入分析主题</p>
+                                <p class="placeholder-hint">系统将基于您上传的文献资料进行分析</p>
+                            </div>
+                            <div id="result-content" class="result-content" style="display: none;">
+                                <div class="analysis-result" id="analysis-result"></div>
+                                <div class="sources-section" id="sources-section">
+                                    <h3>📑 参考来源</h3>
+                                    <div id="sources-list"></div>
+                                </div>
+                            </div>
+                            <div id="loading" class="loading" style="display: none;">
+                                <div class="spinner"></div>
+                                <p>系统正在分析中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 对话区域 -->
+                <div class="chat-section">
+                    <div class="panel-header">
+                        <h2>💬 深入问答</h2>
+                    </div>
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-placeholder">
+                                <p>基于已上传的文献资料进行问答</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chat-input" placeholder="输入您的问题...">
+                            <button class="btn-send" id="send-btn">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 文档库视图 -->
+            <section class="view" id="view-documents">
+                <header class="view-header">
+                    <h1>文档库管理</h1>
+                    <p class="subtitle">上传和管理您的研究文献</p>
+                </header>
+
+                <div class="documents-container">
+                    <!-- 上传区域 -->
+                    <div class="upload-section">
+                        <div class="upload-area" id="upload-area">
+                            <div class="upload-icon">📁</div>
+                            <p class="upload-text">拖拽文件到这里或点击上传</p>
+                            <p class="upload-hint">支持 PDF、Word(.docx)、TXT 格式</p>
+                            <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt" multiple hidden>
+                            <button class="btn-upload" id="upload-btn">选择文件</button>
+                        </div>
+                        <div id="upload-progress" class="upload-progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <p class="progress-text" id="progress-text">上传中...</p>
+                        </div>
+                    </div>
+
+                    <!-- 文档列表 -->
+                    <div class="documents-list">
+                        <h2>📚 已上传文档</h2>
+                        <div id="documents-table">
+                            <div class="empty-state">
+                                <p>暂无文档，请先上传文献资料</p>
+                            </div>
+                        </div>
+                        <button class="btn-danger" id="reset-btn" style="display: none;">
+                            <span>⚠️</span> 重置知识库
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 关于视图 -->
+            <section class="view" id="view-about">
+                <header class="view-header">
+                    <h1>关于系统</h1>
+                    <p class="subtitle">国际关系研判与预测系统</p>
+                </header>
+
+                <div class="about-content">
+                    <div class="about-card">
+                        <h2>🧠 系统介绍</h2>
+                        <p>本系统是一个基于<strong>检索增强生成(RAG)</strong>技术的智能研判平台，专为国际政治研究者设计，特别适合反恐、国家安全等领域的研究者使用。</p>
+                        <p>通过上传学术论文、政策文件、研究报告等文献资料，系统可以：</p>
+                        <ul>
+                            <li>📄 <strong>文档解析</strong> - 自动提取PDF、Word等格式的文本内容</li>
+                            <li>🛡️ <strong>反恐分析</strong> - 针对全球反恐合作、恐怖主义治理等专业分析</li>
+                            <li>🔒 <strong>国家安全</strong> - 涵盖传统安全与非传统安全议题分析</li>
+                            <li>💬 <strong>智能问答</strong> - 基于文献资料回答相关问题</li>
+                            <li>📊 <strong>综合分析</strong> - 对国际关系主题进行多维度分析</li>
+                            <li>🔮 <strong>趋势预测</strong> - 基于历史数据预测未来发展趋势</li>
+                        </ul>
+                    </div>
+
+                    <div class="about-card" style="border-left: 4px solid #e74c3c;">
+                        <h2>🎯 反恐研究专题</h2>
+                        <p>本系统针对反恐研究领域提供专业分析功能：</p>
+                        <ul>
+                            <li>🗺️ <strong>国际反恐合作</strong> - 全球反恐机制、联合国安理会决议、区域组织合作</li>
+                            <li>🤝 <strong>情报合作</strong> - 国际反恐情报共享机制、五眼联盟等</li>
+                            <li>💰 <strong>反恐融资</strong> - 恐怖主义融资监控、洗钱防控</li>
+                            <li>🌐 <strong>网络反恐</strong> - 网络空间恐怖主义、线上极端化</li>
+                            <li>🧩 <strong>去极端化</strong> - 去极端化政策、社区预防、教育矫治</li>
+                            <li>🚧 <strong>跨境合作</strong> - 边境管控、跨国执法合作</li>
+                        </ul>
+                        <p style="margin-top: 12px; color: var(--text-secondary); font-size: 13px;">
+                            💡 建议上传：反恐白皮书、国际组织报告、学术论文、政策文件等
+                        </p>
+                    </div>
+
+                    <div class="about-card">
+                        <h2>⚙️ 技术架构</h2>
+                        <div class="tech-stack">
+                            <span class="tech-item">Python</span>
+                            <span class="tech-item">Flask</span>
+                            <span class="tech-item">LangChain</span>
+                            <span class="tech-item">Chroma</span>
+                            <span class="tech-item">OpenAI GPT</span>
+                        </div>
+                    </div>
+
+                    <div class="about-card">
+                        <h2>📖 使用指南</h2>
+                        <div class="guide-steps">
+                            <div class="step">
+                                <span class="step-num">1</span>
+                                <div class="step-content">
+                                    <h4>上传文献</h4>
+                                    <p>在"文档库"页面上传PDF、Word或TXT格式的学术论文、研究报告等</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num">2</span>
+                                <div class="step-content">
+                                    <h4>等待处理</h4>
+                                    <p>系统会自动解析文档内容并建立向量知识库</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num">3</span>
+                                <div class="step-content">
+                                    <h4>开始分析</h4>
+                                    <p>选择分析类型，输入主题，获取基于文献的智能分析</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <span class="step-num">4</span>
+                                <div class="step-content">
+                                    <h4>深入问答</h4>
+                                    <p>通过对话方式进一步探讨特定问题</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="about-card warning-card">
+                        <h2>⚠️ 使用注意</h2>
+                        <ul>
+                            <li>本系统的分析能力依赖于您上传的文献资料质量和数量</li>
+                            <li>预测性分析仅供参考，不构成政策建议</li>
+                            <li>建议使用权威学术文献以获得更准确的分析结果</li>
+                            <li>请确保遵守相关版权法规使用文献资料</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

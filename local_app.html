@@ -1,0 +1,2734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IRPredict - 国际政治研判系统</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #1a365d;
+      --secondary: #2c5282;
+      --accent: #3182ce;
+      --bg: #f7fafc;
+      --card-bg: #ffffff;
+      --text: #2d3748;
+      --text-light: #718096;
+      --border: #e2e8f0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%);
+      min-height: 100vh;
+      color: var(--text);
+    }
+    
+    /* 登录/注册页 */
+    .auth-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .auth-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    .auth-logo {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 32px;
+    }
+    
+    .auth-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    
+    .auth-subtitle {
+      text-align: center;
+      color: var(--text-light);
+      margin-bottom: 30px;
+    }
+    
+    .form-group { margin-bottom: 20px; }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(49, 130, 206, 0.3);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-light);
+      margin-top: 15px;
+    }
+    
+    .auth-switch {
+      text-align: center;
+      margin-top: 20px;
+      color: var(--text-light);
+    }
+    
+    .auth-switch a {
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    
+    /* 主应用 */
+    .app-container { display: none; }
+    .app-container.active { display: block; }
+    
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .logout-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-light);
+      cursor: pointer;
+    }
+    
+    .main-content {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .sidebar {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      height: fit-content;
+      position: sticky;
+      top: 90px;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+    
+    .nav-item:hover { background: var(--bg); color: var(--text); }
+    .nav-item.active {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+    }
+    
+    .content { min-height: 500px; }
+    
+    .page { display: none; }
+    .page.active { display: block; }
+    
+    .page-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 24px;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+    }
+    
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+    
+    .analysis-types {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .type-card {
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    
+    .type-card:hover { border-color: var(--accent); }
+    .type-card.selected {
+      border-color: var(--accent);
+      background: rgba(49, 130, 206, 0.1);
+    }
+    
+    .type-card h4 { color: var(--primary); margin-bottom: 6px; font-size: 14px; }
+    .type-card p { font-size: 12px; color: var(--text-light); }
+    
+    .form-textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .btn-analyze {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    
+    .btn-analyze:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(49, 130, 206, 0.3);
+    }
+    
+    .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      color: var(--text-light);
+    }
+    
+    .loading.show { display: block; }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .result-box {
+      display: none;
+      margin-top: 24px;
+      padding: 24px;
+      background: var(--bg);
+      border-radius: 12px;
+    }
+    
+    .result-box.show { display: block; }
+    
+    .result-content {
+      white-space: pre-wrap;
+      line-height: 1.8;
+      color: var(--text);
+    }
+    
+    .upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .upload-area:hover {
+      border-color: var(--accent);
+      background: var(--bg);
+    }
+    
+    .upload-icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-text { color: var(--text-light); }
+    
+    .file-list { margin-top: 20px; }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    
+    .file-info { display: flex; align-items: center; gap: 12px; }
+    
+    .file-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .file-name { font-weight: 500; }
+    .file-meta { font-size: 12px; color: var(--text-light); }
+    
+    .file-delete {
+      padding: 6px 12px;
+      background: #fed7d7;
+      color: #c53030;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text-light);
+    }
+    
+    .empty-icon { font-size: 50px; margin-bottom: 12px; opacity: 0.5; }
+    
+    .error-msg {
+      display: none;
+      padding: 12px 16px;
+      background: #fed7d7;
+      color: #c53030;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .error-msg.show { display: block; }
+    
+    /* 新闻详情弹窗样式 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--text-dark);
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #999;
+      cursor: pointer;
+      line-height: 1;
+    }
+    
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .news-detail-meta {
+      display: flex;
+      gap: 20px;
+      color: var(--text-light);
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    
+    .news-detail-content {
+      line-height: 1.8;
+      color: var(--text-dark);
+    }
+    
+    .news-sources {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .news-source-link {
+      display: inline-block;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 14px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .news-source-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .source-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .source-option:hover {
+      background: var(--border);
+    }
+    
+    .source-option input[type="checkbox"] {
+      margin-top: 4px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .source-label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .source-label strong {
+      color: var(--text);
+      font-size: 14px;
+    }
+    
+    .source-label small {
+      color: var(--text-light);
+      font-size: 12px;
+    }
+    
+    @media (max-width: 768px) {
+      .main-content { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 登录/注册页 -->
+  <div class="auth-container" id="authPage">
+    <div class="auth-card">
+      <div class="auth-logo">🌏</div>
+      <h1 class="auth-title">IRPredict</h1>
+      <p class="auth-subtitle">国际政治研判与预测系统</p>
+      
+      <!-- 登录表单 -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label class="form-label">用户名</label>
+          <input type="text" class="form-input" id="loginUsername" placeholder="请输入用户名">
+        </div>
+        <button class="btn btn-primary" onclick="doLogin()">登录</button>
+        <p class="auth-switch">
+          没有账号？<a onclick="showRegister()">立即注册</a>
+        </p>
+      </div>
+      
+      <!-- 注册表单 -->
+      <div id="registerForm" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">用户名</label>
+          <input type="text" class="form-input" id="regUsername" placeholder="请输入用户名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">昵称（可选）</label>
+          <input type="text" class="form-input" id="regNickname" placeholder="显示名称">
+        </div>
+        <button class="btn btn-primary" onclick="doRegister()">注册</button>
+        <p class="auth-switch">
+          已有账号？<a onclick="showLogin()">立即登录</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主应用 -->
+  <div class="app-container" id="appPage">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">🌏</div>
+        <span>IRPredict</span>
+      </div>
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userName">用户</span>
+        <button class="logout-btn" onclick="logout()">退出</button>
+      </div>
+    </header>
+    
+    <div class="main-content">
+      <aside class="sidebar">
+        <div class="nav-item active" onclick="showPage('analyze')">
+          <span>🔍</span><span>智能研判</span>
+        </div>
+        <div class="nav-item" onclick="showPage('documents')">
+          <span>📚</span><span>共享文献库</span>
+        </div>
+        <div class="nav-item" onclick="showPage('news')">
+          <span>📰</span><span>新闻动态库</span>
+        </div>
+        <div class="nav-item" onclick="showPage('history')">
+          <span>📊</span><span>分析历史</span>
+        </div>
+        <div class="nav-item" onclick="showPage('knowledge')">
+          <span>💡</span><span>知识库</span>
+        </div>
+        <div class="nav-item" onclick="showPage('outline')">
+          <span>📝</span><span>论文辅助</span>
+        </div>
+        <div class="nav-item" onclick="showPage('analysis')">
+          <span>📈</span><span>数据可视化</span>
+        </div>
+        <div class="nav-item" onclick="showPage('reading')">
+          <span>📖</span><span>文献精读</span>
+        </div>
+        <div class="nav-item" onclick="showPage('compare')">
+          <span>🔬</span><span>模型对比</span>
+        </div>
+        <div class="nav-item" onclick="showPage('batch')">
+          <span>📚</span><span>批量分析</span>
+        </div>
+        <div class="nav-item" onclick="showPage('export')">
+          <span>📥</span><span>导出报告</span>
+        </div>
+        <div class="nav-item" onclick="showPage('favorites')">
+          <span>⭐</span><span>我的收藏</span>
+        </div>
+        <div class="nav-item" onclick="showPage('trends')">
+          <span>📡</span><span>热点追踪</span>
+        </div>
+        <div class="nav-item" onclick="showPage('settings')">
+          <span>⚙️</span><span>API设置</span>
+        </div>
+      </aside>
+      
+      <main class="content">
+        <!-- 分析页面 -->
+        <div class="page active" id="page-analyze">
+          <h2 class="page-title">🔍 智能研判</h2>
+          
+          <div class="card">
+            <div class="card-title">📋 选择分析类型</div>
+            <div class="analysis-types">
+              <div class="type-card selected" data-type="general" onclick="selectType(this)">
+                <h4>🌍 综合分析</h4>
+                <p>全面分析国际关系事件</p>
+              </div>
+              <div class="type-card" data-type="history" onclick="selectType(this)">
+                <h4>📜 历史背景</h4>
+                <p>分析历史渊源和脉络</p>
+              </div>
+              <div class="type-card" data-type="actors" onclick="selectType(this)">
+                <h4>👥 参与者分析</h4>
+                <p>分析各方利益和实力</p>
+              </div>
+              <div class="type-card" data-type="counterterror" onclick="selectType(this)">
+                <h4>🛡️ 反恐研究</h4>
+                <p>国际反恐合作分析</p>
+              </div>
+              <div class="type-card" data-type="security" onclick="selectType(this)">
+                <h4>🔐 国家安全</h4>
+                <p>安全威胁与应对</p>
+              </div>
+              <div class="type-card" data-type="trends" onclick="selectType(this)">
+                <h4>📈 趋势预测</h4>
+                <p>预测未来发展趋势</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">🤖 选择AI模型</div>
+            <select id="aiProvider" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd;">
+              <option value="">加载中...</option>
+            </select>
+            <small style="color: #666;">推荐使用DeepSeek-V3，效果最强</small>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📚 分析来源</div>
+            <label class="source-option">
+              <input type="checkbox" id="useDocuments" checked>
+              <span class="source-label">
+                <strong>📖 结合文献库分析</strong>
+                <small>AI会参考文献库中的文献内容进行分析</small>
+              </span>
+            </label>
+            <label class="source-option">
+              <input type="checkbox" id="useNews">
+              <span class="source-label">
+                <strong>📰 接入最新新闻动态</strong>
+                <small>AI会搜索并结合最新新闻进行分析（更实时）</small>
+              </span>
+            </label>
+            <label class="source-option">
+              <input type="checkbox" id="autoSearchNews" checked>
+              <span class="source-label">
+                <strong>🔎 AI自动搜索最新新闻</strong>
+                <small>AI会根据你的研究主题自动搜索并保存最新新闻到新闻库</small>
+              </span>
+            </label>
+            <label class="source-option">
+              <input type="checkbox" id="useAIOnly">
+              <span class="source-label">
+                <strong>🤖 仅使用AI分析</strong>
+                <small>不参考文献库和新闻，仅用AI知识库分析</small>
+              </span>
+            </label>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📝 输入研究主题</div>
+            <div class="error-msg" id="errorMsg"></div>
+            <textarea class="form-textarea" id="topicInput" placeholder="例如：中美关系、俄乌冲突、全球反恐合作、伊斯兰国组织发展..."></textarea>
+            <button class="btn-analyze" id="analyzeBtn" onclick="startAnalyze()">
+              🔍 开始智能分析
+            </button>
+          </div>
+          
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI正在分析中，请稍候...</p>
+          </div>
+          
+          <div class="result-box" id="resultBox">
+            <div class="card-title">📊 分析结果</div>
+            <div class="result-content" id="resultContent"></div>
+            <div class="chat-section" id="chatSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+              <div class="chat-messages" id="chatMessages" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
+              <div class="chat-input" style="display: flex; gap: 10px;">
+                <input type="text" id="chatInput" placeholder="继续追问..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                <button class="btn btn-primary" onclick="sendChat()">发送</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 文献库页面 -->
+        <div class="page" id="page-documents">
+          <h2 class="page-title">📚 共享文献库</h2>
+          
+          <div class="card">
+            <div class="card-title">📤 上传文献</div>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+              <div class="upload-icon">📎</div>
+              <div class="upload-text">点击上传文件（支持一次性上传多个）</div>
+            </div>
+            <input type="file" id="fileInput" style="display:none" accept=".pdf,.doc,.docx,.txt,.md" multiple onchange="handleFileUpload(event)">
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📁 文献列表 <span id="docCount">(0)</span></div>
+            <div class="file-list" id="fileList">
+              <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <p>暂无文献，上传论文、新闻或数据开始分析</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 新闻动态页面 -->
+        <div class="page" id="page-news">
+          <h2 class="page-title">📰 新闻动态库</h2>
+          
+          <div class="card">
+            <div class="card-title">🌐 新闻网站</div>
+            <p style="color: #666; margin-bottom: 15px; font-size: 14px;">点击可直接访问各大新闻网站</p>
+            <div class="news-sources">
+              <a href="http://www.xinhuanet.com/" target="_blank" class="news-source-link">新华网</a>
+              <a href="http://www.people.com.cn/" target="_blank" class="news-source-link">人民网</a>
+              <a href="http://www.huanqiu.com/" target="_blank" class="news-source-link">环球时报</a>
+              <a href="https://news.sina.com.cn/" target="_blank" class="news-source-link">新浪新闻</a>
+              <a href="https://news.qq.com/" target="_blank" class="news-source-link">腾讯新闻</a>
+              <a href="https://www.thepaper.cn/" target="_blank" class="news-source-link">澎湃新闻</a>
+              <a href="https://www.guancha.cn/" target="_blank" class="news-source-link">观察者网</a>
+              <a href="https://www.chinanews.com.cn/" target="_blank" class="news-source-link">中新社</a>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">🤖 AI智能获取最新新闻</div>
+            <p style="color: #666; margin-bottom: 15px; font-size: 14px;">点击通过AI获取各大媒体的最新国际新闻动态</p>
+            <button class="btn btn-primary" onclick="fetchRSS('xinhua')">📥 获取新华网最新</button>
+            <button class="btn btn-primary" onclick="fetchRSS('people')">📥 获取人民网最新</button>
+            <button class="btn btn-primary" onclick="fetchRSS('huanqiu')">📥 获取环球时报最新</button>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📝 手动添加新闻</div>
+            <div class="form-group">
+              <input type="text" class="form-input" id="newsTitle" placeholder="新闻标题">
+            </div>
+            <div class="form-group">
+              <textarea class="form-textarea" id="newsContent" placeholder="新闻内容摘要..."></textarea>
+            </div>
+            <div class="form-group">
+              <input type="text" class="form-input" id="newsSource" placeholder="来源（如：BBC、Reuters、人民日报）">
+            </div>
+            <div class="form-group">
+              <input type="text" class="form-input" id="newsDate" placeholder="发布日期（可选）">
+            </div>
+            <button class="btn btn-primary" onclick="addNews()">添加新闻</button>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">🤖 AI实时搜索新闻</div>
+            <div class="form-group">
+              <select id="newsAiProvider" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="silicon">🔥 DeepSeek-V3</option>
+                <option value="silicon_pro">⚡ DeepSeek-V2.5</option>
+                <option value="qwen">🧠 Qwen2-72B</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <input type="text" class="form-input" id="searchKeyword" placeholder="输入关键词，AI将搜索最新相关新闻">
+            </div>
+            <button class="btn btn-primary" onclick="searchNewsAI()">🔍 搜索新闻</button>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📰 新闻列表 <span id="newsCount">(0)</span>
+              <button class="btn btn-small" onclick="filterNews('ai')" style="margin-left: 10px;">🔍 AI搜索</button>
+              <button class="btn btn-small" onclick="filterNews('all')" style="margin-left: 5px;">全部</button>
+            </div>
+            <div id="newsList">
+              <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <p>暂无新闻，添加新闻或使用AI搜索</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 历史记录页面 -->
+        <div class="page" id="page-history">
+          <h2 class="page-title">📊 分析历史</h2>
+          
+          <div class="card">
+            <div class="card-title">📋 历史记录</div>
+            <div id="historyList">
+              <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <p>暂无分析记录</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 分析详情查看区域 -->
+          <div class="card" id="historyDetailCard" style="display: none;">
+            <div class="card-title">
+              <span>📄 分析详情</span>
+              <button class="btn btn-small" onclick="closeHistoryDetail()" style="float: right;">关闭</button>
+            </div>
+            <div id="historyDetailContent">
+              <div id="historyDetailLoading" style="display: none; text-align: center; padding: 20px;">
+                加载中...
+              </div>
+              <div id="historyDetailInfo" style="margin-bottom: 15px; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+                <strong>主题：</strong><span id="detailTopic"></span><br>
+                <strong>类型：</strong><span id="detailType"></span> | 
+                <strong>来源：</strong><span id="detailSources"></span> | 
+                <strong>时间：</strong><span id="detailTime"></span>
+              </div>
+              <div id="historyDetailResult" style="white-space: pre-wrap; line-height: 1.6;"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 知识库页面 -->
+        <div class="page" id="page-knowledge">
+          <h2 class="page-title">💡 知识库</h2>
+          
+          <div class="card">
+            <div class="card-title">➕ 添加知识</div>
+            <div style="display: grid; gap: 10px;">
+              <select id="knowledgeCategory" style="padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="">选择分类</option>
+                <option value="概念">📖 概念</option>
+                <option value="理论">📚 理论</option>
+                <option value="案例">案例</option>
+                <option value="人物">👤 人物</option>
+                <option value="事件">📌 事件</option>
+              </select>
+              <input type="text" id="knowledgeTitle" placeholder="标题（如：修昔底德陷阱）" style="padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+              <textarea id="knowledgeContent" placeholder="内容描述..." rows="3" style="padding: 10px; border-radius: 5px; border: 1px solid #ddd;"></textarea>
+              <input type="text" id="knowledgeTags" placeholder="标签（逗号分隔，如：中美关系,大国博弈）" style="padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+              <button class="btn btn-primary" onclick="addKnowledge()">💾 保存到知识库</button>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">🔍 知识列表 <span id="knowledgeCount">(0)</span></div>
+            <div id="knowledgeFilter" style="margin-bottom: 10px;">
+              <button class="btn btn-small" onclick="filterKnowledge('')">全部</button>
+              <button class="btn btn-small" onclick="filterKnowledge('概念')">概念</button>
+              <button class="btn btn-small" onclick="filterKnowledge('理论')">理论</button>
+              <button class="btn btn-small" onclick="filterKnowledge('案例')">案例</button>
+              <button class="btn btn-small" onclick="filterKnowledge('人物')">人物</button>
+              <button class="btn btn-small" onclick="filterKnowledge('事件')">事件</button>
+            </div>
+            <div id="knowledgeList">
+              <div class="empty-state">
+                <div class="empty-icon">💡</div>
+                <p>暂无知识条目</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 论文辅助页面 -->
+        <div class="page" id="page-outline">
+          <h2 class="page-title">📝 论文辅助</h2>
+          
+          <div class="card">
+            <div class="card-title">📋 生成论文大纲</div>
+            <div style="display: grid; gap: 10px;">
+              <input type="text" id="outlineTopic" placeholder="输入研究主题（如：中美竞争与合作）" style="padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+              <select id="outlineType" style="padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="paper">📄 学术论文大纲</option>
+                <option value="thesis">🎓 学位论文大纲（本科/硕士）</option>
+                <option value="proposal">📑 研究计划书大纲</option>
+              </select>
+              <select id="outlineAiProvider" style="padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                <option value="silicon">🤖 硅基流动 DeepSeek-V3</option>
+                <option value="silicon_pro">🤖 硅基流动 DeepSeek-V2.5</option>
+                <option value="qwen">🤖 Qwen2-72B</option>
+              </select>
+              <button class="btn btn-primary" onclick="generateOutline()">✨ 生成大纲</button>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📜 已生成的大纲 <span id="outlineCount">(0)</span></div>
+            <div id="outlineList">
+              <div class="empty-state">
+                <div class="empty-icon">📝</div>
+                <p>暂无已生成的大纲</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card" id="outlineResultCard" style="display: none;">
+            <div class="card-title">📄 大纲预览</div>
+            <pre id="outlineResult" style="white-space: pre-wrap; background: #f7fafc; padding: 15px; border-radius: 8px; max-height: 500px; overflow-y: auto;"></pre>
+          </div>
+        </div>
+        
+        <!-- 数据可视化页面 -->
+        <div class="page" id="page-analysis">
+          <h2 class="page-title">📈 数据可视化分析</h2>
+          
+          <div class="card">
+            <div class="card-title">📄 文献分析</div>
+            <p style="color: #666; margin-bottom: 15px;">选择要分析的文献（可多选），AI会对选中的文献进行深度分析</p>
+            
+            <div style="margin-bottom: 15px;">
+              <button class="btn btn-small" onclick="selectAllDocs()">全选</button>
+              <button class="btn btn-small" onclick="selectNoneDocs()">清空</button>
+              <select id="docAnalysisAiProvider" style="padding: 8px; margin-left: 10px;">
+                <option value="silicon">🤖 DeepSeek-V3</option>
+                <option value="silicon_pro">🤖 DeepSeek-V2.5</option>
+                <option value="qwen">🤖 Qwen2-72B</option>
+              </select>
+            </div>
+            
+            <div id="docSelectList" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+              <div style="color: #999; text-align: center;">加载中...</div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="analyzeSelectedDocs()">🔍 分析所选文献</button>
+          </div>
+          
+          <div class="card" id="docAnalysisResultCard" style="display: none;">
+            <div class="card-title">📊 文献分析结果</div>
+            <pre id="docAnalysisResult" style="white-space: pre-wrap; background: #f7fafc; padding: 15px; border-radius: 8px; max-height: 600px; overflow-y: auto;"></pre>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">🔬 综合分析</div>
+            <p style="color: #666; margin-bottom: 15px;">基于你的全部文献库、知识库、新闻库进行综合分析，提取主题聚类、关键词、研究趋势等</p>
+            <button class="btn btn-primary" onclick="analyzeDocuments()">🔍 综合分析全部</button>
+          </div>
+          
+          <div class="card" id="analysisResultCard" style="display: none;">
+            <div class="card-title">📊 综合分析结果</div>
+            <pre id="analysisResult" style="white-space: pre-wrap; background: #f7fafc; padding: 15px; border-radius: 8px; max-height: 600px; overflow-y: auto;"></pre>
+          </div>
+        </div>
+        
+        <!-- 文献精读页面 -->
+        <div class="page" id="page-reading">
+          <h2 class="page-title">📖 文献精读</h2>
+          
+          <div class="card">
+            <div class="card-title">📚 选择要精读的文献</div>
+            <div id="readingDocList" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+              <div style="color: #999; text-align: center;">加载中...</div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">⚙️ 分析设置</div>
+            <select id="readingAiProvider" style="padding: 10px; width: 100%; border-radius: 5px; border: 1px solid #ddd;">
+              <option value="silicon">🤖 DeepSeek-V3 (推荐)</option>
+              <option value="silicon_r1">🧠 DeepSeek-R1 (推理)</option>
+              <option value="silicon_pro">⚡ DeepSeek-V2.5</option>
+              <option value="qwen">🧠 Qwen2-72B</option>
+            </select>
+          </div>
+          
+          <button class="btn btn-primary" id="startReadingBtn" onclick="startDocumentReading()" style="width: 100%; margin-bottom: 20px;">
+            📖 开始精读分析
+          </button>
+          
+          <div class="card" id="readingResultCard" style="display: none;">
+            <div class="card-title">📖 精读分析结果</div>
+            <pre id="readingResult" style="white-space: pre-wrap; background: #f7fafc; padding: 15px; border-radius: 8px; max-height: 600px; overflow-y: auto;"></pre>
+          </div>
+        </div>
+        
+        <!-- 模型对比页面 -->
+        <div class="page" id="page-compare">
+          <h2 class="page-title">🔬 模型对比分析</h2>
+          
+          <div class="card">
+            <div class="card-title">📝 分析主题</div>
+            <textarea id="compareTopic" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; min-height: 80px;" placeholder="输入要对比分析的主题..."></textarea>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">🤖 选择模型（可多选）</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+              <label><input type="checkbox" value="silicon" checked> 🔥 DeepSeek-V3</label>
+              <label><input type="checkbox" value="silicon_r1"> 🧠 DeepSeek-R1</label>
+              <label><input type="checkbox" value="silicon_pro"> ⚡ DeepSeek-V2.5</label>
+              <label><input type="checkbox" value="qwen"> 🧠 Qwen2-72B</label>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📚 引用文献（可选）</div>
+            <div id="compareDocList" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+              <div style="color: #999; text-align: center;">加载中...</div>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" onclick="compareModels()" style="width: 100%; margin-bottom: 20px;">
+            🔬 开始对比分析
+          </button>
+          
+          <div id="compareResults"></div>
+        </div>
+        
+        <!-- 批量分析页面 -->
+        <div class="page" id="page-batch">
+          <h2 class="page-title">📚 批量文献分析</h2>
+          
+          <div class="card">
+            <div class="card-title">📄 选择文献（多选）</div>
+            <div style="margin-bottom: 10px;">
+              <button class="btn btn-small" onclick="selectAllBatchDocs()">全选</button>
+              <button class="btn btn-small" onclick="selectNoneBatchDocs()">清空</button>
+            </div>
+            <div id="batchDocList" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+              <div style="color: #999; text-align: center;">加载中...</div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">⚙️ 分析设置</div>
+            <select id="batchAiProvider" style="padding: 10px; width: 100%; border-radius: 5px; border: 1px solid #ddd;">
+              <option value="silicon">🤖 DeepSeek-V3</option>
+              <option value="silicon_r1">🧠 DeepSeek-R1</option>
+              <option value="silicon_pro">⚡ DeepSeek-V2.5</option>
+            </select>
+          </div>
+          
+          <button class="btn btn-primary" onclick="batchAnalyze()" style="width: 100%; margin-bottom: 20px;">
+            📚 开始批量分析
+          </button>
+          
+          <div id="batchResults"></div>
+        </div>
+        
+        <!-- 导出报告页面 -->
+        <div class="page" id="page-export">
+          <h2 class="page-title">📥 导出报告</h2>
+          
+          <div class="card">
+            <div class="card-title">📋 选择导出类型</div>
+            <div style="margin-bottom: 15px;">
+              <label style="margin-right: 20px;">
+                <input type="radio" name="exportType" value="analyses" checked> 分析记录
+              </label>
+              <label>
+                <input type="radio" name="exportType" value="documents"> 文献资料
+              </label>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📄 选择要导出的项目</div>
+            <div style="margin-bottom: 10px;">
+              <button class="btn btn-small" onclick="selectAllExport()">全选</button>
+              <button class="btn btn-small" onclick="selectNoneExport()">清空</button>
+            </div>
+            <div id="exportList" style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+              <div style="color: #999; text-align: center;">加载中...</div>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" onclick="exportReport()" style="width: 100%; margin-bottom: 20px;">
+            📥 导出Markdown报告
+          </button>
+        </div>
+        
+        <!-- 收藏夹页面 -->
+        <div class="page" id="page-favorites">
+          <h2 class="page-title">⭐ 我的收藏</h2>
+          
+          <div id="favoritesList">
+            <div style="color: #999; text-align: center; padding: 20px;">加载中...</div>
+          </div>
+        </div>
+        
+        <!-- 热点追踪页面 -->
+        <div class="page" id="page-trends">
+          <h2 class="page-title">📡 热点追踪</h2>
+          
+          <div class="card">
+            <div class="card-title">🎯 添加追踪主题</div>
+            <textarea id="trackTopics" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; min-height: 80px;" placeholder="输入要追踪的主题，每行一个..."></textarea>
+            <button class="btn btn-primary" onclick="trackTrends()" style="margin-top: 10px; width: 100%;">
+              📡 开始追踪
+            </button>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📜 追踪历史</div>
+            <button class="btn btn-small" onclick="loadTrendsHistory()" style="margin-bottom: 10px;">🔄 刷新</button>
+            <div id="trendsHistory" style="max-height: 400px; overflow-y: auto;">
+              <div style="color: #999; text-align: center;">暂无追踪记录</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- API设置页面 -->
+        <div class="page" id="page-settings">
+          <h2 class="page-title">⚙️ API设置</h2>
+          
+          <div class="card">
+            <div class="card-title">🌐 自定义API配置</div>
+            <p style="color: #666; margin-bottom: 15px;">支持中转API（如SiliconFlow、火山引擎等），按token消耗扣费</p>
+            
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">API名称</label>
+              <input type="text" id="customApiName" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;" placeholder="例如：我的中转API" value="自定义API">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">API地址</label>
+              <input type="text" id="customApiEndpoint" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;" placeholder="https://api.siliconflow.cn/v1/chat/completions">
+              <small style="color: #888;">中转API的完整地址，需包含 /v1/chat/completions</small>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">API密钥</label>
+              <input type="password" id="customApiKey" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;" placeholder="输入您的中转API密钥">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: bold;">模型名称</label>
+              <input type="text" id="customApiModel" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd;" placeholder="deepseek-ai/DeepSeek-V3" value="deepseek-ai/DeepSeek-V3">
+              <small style="color: #888;">填写中转API支持的模型名称</small>
+            </div>
+            
+            <button class="btn btn-primary" onclick="saveCustomApi()" style="width: 100%;">
+              💾 保存配置
+            </button>
+            <div id="apiSaveSuccess" style="display:none; margin-top: 10px; padding: 10px; background: #d4edda; color: #155724; border-radius: 5px;">✅ 配置已保存！</div>
+            <div id="apiSaveError" style="display:none; margin-top: 10px; padding: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;"></div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">📋 当前配置</div>
+            <div id="currentApiConfig">
+              <p style="color: #999;">加载中...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:5000';
+    let currentUser = null;
+    let selectedType = 'general';
+    
+    // ==================== 认证 ====================
+    
+    function showRegister() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+    }
+    
+    function showLogin() {
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'block';
+    }
+    
+    async function doLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      if (!username) { alert('请输入用户名'); return; }
+      
+      console.log('正在登录...');
+      
+      try {
+        const res = await fetch(API_BASE + '/api/user/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username})
+        });
+        
+        console.log('响应状态:', res.status);
+        
+        const data = await res.json();
+        console.log('响应数据:', data);
+        
+        if (data.success) {
+          currentUser = data;
+          showApp();
+          loadDocuments();
+          loadAIProviders();
+        } else {
+          alert(data.error);
+        }
+      } catch (err) {
+        console.error('登录错误:', err);
+        alert('登录失败，请检查服务是否启动');
+      }
+    }
+    
+    async function doRegister() {
+      const username = document.getElementById('regUsername').value.trim();
+      const nickname = document.getElementById('regNickname').value.trim() || username;
+      if (!username) { alert('请输入用户名'); return; }
+      
+      const res = await fetch(API_BASE + '/api/user/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, nickname})
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        currentUser = data;
+        showApp();
+        loadDocuments();
+      } else {
+        alert(data.error);
+      }
+    }
+    
+    async function logout() {
+      await fetch(API_BASE + '/api/user/logout', {method: 'POST'});
+      currentUser = null;
+      document.getElementById('authPage').style.display = 'flex';
+      document.getElementById('appPage').classList.remove('active');
+    }
+    
+    function showApp() {
+      document.getElementById('authPage').style.display = 'none';
+      document.getElementById('appPage').classList.add('active');
+      if (currentUser) {
+        document.getElementById('userAvatar').textContent = currentUser.nickname ? currentUser.nickname[0].toUpperCase() : 'U';
+        document.getElementById('userName').textContent = currentUser.nickname || currentUser.username;
+      }
+    }
+    
+    // ==================== 页面 ====================
+    
+    function showPage(pageName) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      event.target.closest('.nav-item').classList.add('active');
+      
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.getElementById('page-' + pageName).classList.add('active');
+      
+      if (pageName === 'documents') loadDocuments();
+      if (pageName === 'news') loadNews();
+      if (pageName === 'history') loadHistory();
+      if (pageName === 'knowledge') loadKnowledge();
+      if (pageName === 'outline') loadOutlines();
+      if (pageName === 'analysis') loadDocSelectList();
+      if (pageName === 'reading') loadReadingDocList();
+      if (pageName === 'compare') loadCompareDocList();
+      if (pageName === 'batch') loadBatchDocList();
+      if (pageName === 'export') loadExportData();
+      if (pageName === 'favorites') loadFavorites();
+      if (pageName === 'trends') loadTrendsHistory();
+      if (pageName === 'settings') loadCustomApiConfig();
+    }
+    
+    // ==================== 自定义API配置 ====================
+    
+    async function loadAIProviders() {
+      try {
+        const response = await fetch(API_BASE + '/api/config');
+        const data = await response.json();
+        
+        if (data.success && data.aiProviders) {
+          const select = document.getElementById('aiProvider');
+          select.innerHTML = '';
+          
+          data.aiProviders.forEach(provider => {
+            const option = document.createElement('option');
+            option.value = provider.id;
+            option.textContent = provider.name + (provider.enabled ? '' : ' (未配置)');
+            if (provider.default) option.selected = true;
+            if (!provider.enabled) option.disabled = true;
+            select.appendChild(option);
+          });
+        }
+      } catch (err) {
+        console.error('加载AI提供商失败:', err);
+      }
+    }
+    
+    async function loadCustomApiConfig() {
+      try {
+        const response = await fetch(API_BASE + '/api/config/custom');
+        const data = await response.json();
+        
+        if (data.success) {
+          const config = data.customApi;
+          document.getElementById('customApiName').value = config.name || '自定义API';
+          document.getElementById('customApiEndpoint').value = config.endpoint || '';
+          document.getElementById('customApiModel').value = config.model || 'deepseek-ai/DeepSeek-V3';
+          
+          const statusHtml = config.enabled 
+            ? `<p style="color: green;">✅ 自定义API已启用</p>
+               <p>模型: ${config.model}</p>
+               <p>地址: ${config.endpoint}</p>`
+            : `<p style="color: #888;">⚠️ 自定义API未启用</p>
+               <p>请填写上方表单并保存以启用</p>`;
+          document.getElementById('currentApiConfig').innerHTML = statusHtml;
+        }
+      } catch (err) {
+        console.error('加载API配置失败:', err);
+        document.getElementById('currentApiConfig').innerHTML = '<p style="color: red;">加载配置失败</p>';
+      }
+    }
+    
+    async function saveCustomApi() {
+      const name = document.getElementById('customApiName').value.trim();
+      const endpoint = document.getElementById('customApiEndpoint').value.trim();
+      const apiKey = document.getElementById('customApiKey').value.trim();
+      const model = document.getElementById('customApiModel').value.trim();
+      
+      const successEl = document.getElementById('apiSaveSuccess');
+      const errorEl = document.getElementById('apiSaveError');
+      
+      successEl.style.display = 'none';
+      errorEl.style.display = 'none';
+      
+      if (!endpoint) {
+        errorEl.textContent = '请输入API地址';
+        errorEl.style.display = 'block';
+        return;
+      }
+      
+      if (!apiKey) {
+        errorEl.textContent = '请输入API密钥';
+        errorEl.style.display = 'block';
+        return;
+      }
+      
+      try {
+        const response = await fetch(API_BASE + '/api/config/custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name || '自定义API',
+            endpoint: endpoint,
+            apiKey: apiKey,
+            model: model || 'deepseek-ai/DeepSeek-V3',
+            enabled: true
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          successEl.style.display = 'block';
+          setTimeout(() => { successEl.style.display = 'none'; }, 3000);
+          document.getElementById('customApiKey').value = '';
+          loadCustomApiConfig();
+          loadAIProviders();  // 刷新AI选择下拉框
+        } else {
+          errorEl.textContent = data.error || '保存失败';
+          errorEl.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('保存API配置失败:', err);
+        errorEl.textContent = '网络错误，请重试';
+        errorEl.style.display = 'block';
+      }
+    }
+    
+    function selectType(card) {
+      document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedType = card.dataset.type;
+    }
+    
+    // ==================== 分析 ====================
+    
+    async function startAnalyze() {
+      const topic = document.getElementById('topicInput').value.trim();
+      const useDocuments = document.getElementById('useDocuments').checked;
+      const useNews = document.getElementById('useNews').checked;
+      const autoSearchNews = document.getElementById('autoSearchNews').checked;
+      const useAIOnly = document.getElementById('useAIOnly').checked;
+      const aiProvider = document.getElementById('aiProvider').value;
+      const errorMsg = document.getElementById('errorMsg');
+      const loading = document.getElementById('loading');
+      const resultBox = document.getElementById('resultBox');
+      const resultContent = document.getElementById('resultContent');
+      const btn = document.getElementById('analyzeBtn');
+      
+      console.log('Start analyze clicked, topic:', topic);
+      
+      // 判断分析来源
+      let useLiterature = useDocuments && !useAIOnly;
+      if (useDocuments && useAIOnly) {
+        useLiterature = true;
+      }
+      if (!useDocuments && !useAIOnly) {
+        useLiterature = true;
+      }
+      
+      if (!topic) {
+        errorMsg.textContent = '请输入研究主题';
+        errorMsg.classList.add('show');
+        console.log('No topic entered');
+        return;
+      }
+      
+      console.log('Showing loading...');
+      errorMsg.classList.remove('show');
+      resultBox.classList.remove('show');
+      loading.classList.add('show');
+      btn.disabled = true;
+      
+      let text = '';
+      try {
+        const url = API_BASE + '/api/analyze';
+        console.log('Sending request to:', url);
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            topic, 
+            analysisType: selectedType,
+            useLiterature: useLiterature,
+            useNews: useNews && !useAIOnly,
+            autoSearchNews: autoSearchNews && !useAIOnly,
+            aiProvider: aiProvider
+          }),
+          credentials: 'same-origin'
+        });
+        
+        text = await res.text();
+        console.log('Response:', text);
+        
+        const data = JSON.parse(text);
+        loading.classList.remove('show');
+        btn.disabled = false;
+        
+        if (data.success) {
+          resultContent.textContent = data.result;
+          resultBox.classList.add('show');
+          
+          // 显示历史参考信息
+          if (data.has_history_ref && data.history_topics && data.history_topics.length > 0) {
+            const historyInfo = document.createElement('div');
+            historyInfo.style.cssText = 'margin-top: 10px; padding: 10px; background: #e8f5e9; border-radius: 5px; font-size: 13px; color: #2e7d32;';
+            historyInfo.innerHTML = '<strong>📚 参考历史分析：</strong>本次分析参考了以下历史记录：' + data.history_topics.join('、');
+            resultBox.insertBefore(historyInfo, resultContent);
+          }
+          
+          // 显示追问区域
+          if (data.analysis_id) {
+            showChatSection(data.analysis_id);
+          }
+        } else {
+          errorMsg.textContent = data.error || '分析失败';
+          errorMsg.classList.add('show');
+        }
+      } catch (err) {
+        loading.classList.remove('show');
+        btn.disabled = false;
+        errorMsg.textContent = '网络错误: ' + err.message + (text ? ' | 响应: ' + text.substring(0, 100) : '');
+        errorMsg.classList.add('show');
+      }
+    }
+    
+    // ==================== 文献 ====================
+    
+    async function loadDocuments() {
+      try {
+        const res = await fetch(API_BASE + '/api/documents');
+        const data = await res.json();
+        
+        const fileList = document.getElementById('fileList');
+        const docCount = document.getElementById('docCount');
+        
+        docCount.textContent = `(${data.documents.length})`;
+        
+        if (data.documents.length === 0) {
+          fileList.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>暂无文献</p></div>';
+          return;
+        }
+        
+        fileList.innerHTML = data.documents.map(doc => `
+          <div class="file-item">
+            <div class="file-info">
+              <div class="file-icon">📄</div>
+              <div>
+                <div class="file-name">${doc.title}</div>
+                <div class="file-meta">${doc.username} | ${doc.created_at}</div>
+              </div>
+            </div>
+            ${doc.username === (currentUser?.nickname || currentUser?.username) ? 
+              `<button class="file-delete" onclick="deleteDoc(${doc.id})">删除</button>` : ''}
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    async function handleFileUpload(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      
+      let uploadedCount = 0;
+      let errorCount = 0;
+      
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+          const res = await fetch(API_BASE + '/api/documents', {
+            method: 'POST',
+            body: formData
+          });
+          
+          const data = await res.json();
+          if (data.success) {
+            uploadedCount++;
+          } else {
+            errorCount++;
+          }
+        } catch (err) {
+          errorCount++;
+        }
+      }
+      
+      if (uploadedCount > 0) {
+        alert(`成功上传 ${uploadedCount} 个文件${errorCount > 0 ? '，' + errorCount + '个失败' : ''}！`);
+        loadDocuments();
+      } else if (errorCount > 0) {
+        alert('上传失败，请重试');
+      }
+      
+      event.target.value = '';
+    }
+    
+    async function deleteDoc(id) {
+      if (!confirm('确定删除这篇文献吗？')) return;
+      
+      try {
+        const res = await fetch(API_BASE + '/api/documents/' + id, {method: 'DELETE'});
+        const data = await res.json();
+        if (data.success) {
+          loadDocuments();
+        } else {
+          alert(data.error);
+        }
+      } catch (err) {
+        alert('删除失败');
+      }
+    }
+    
+    // ==================== 新闻 ====================
+    
+    let allNews = [];  // 保存所有新闻
+    let currentNewsFilter = 'all';  // 当前筛选状态
+
+    async function loadNews() {
+      try {
+        const res = await fetch(API_BASE + '/api/news');
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error('获取新闻失败，状态:', res.status, '响应:', errText);
+          alert('获取新闻失败: ' + errText);
+          return;
+        }
+        const data = await res.json();
+        
+        if (!data.success) {
+          alert('获取新闻失败: ' + (data.error || '未知错误'));
+          return;
+        }
+        
+        allNews = data.news;  // 保存所有新闻
+        renderNews(currentNewsFilter);
+      } catch (err) {
+        console.error('获取新闻异常:', err);
+        alert('获取新闻异常: ' + err.message);
+      }
+    }
+    
+    function filterNews(type) {
+      currentNewsFilter = type;
+      renderNews(type);
+    }
+    
+    function renderNews(filterType) {
+      const newsList = document.getElementById('newsList');
+      const newsCount = document.getElementById('newsCount');
+      
+      let filteredNews = allNews;
+      let countText = '';
+      
+      if (filterType === 'ai') {
+        filteredNews = allNews.filter(n => n.title.includes('AI自动搜索') || n.source === 'AI分析生成');
+        countText = ` (${filteredNews.length}条AI搜索)`;
+      }
+      
+      newsCount.textContent = `(${filteredNews.length}${countText})`;
+      
+      if (filteredNews.length === 0) {
+        newsList.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>暂无新闻</p></div>';
+        return;
+      }
+
+      newsList.innerHTML = filteredNews.map(n => `
+        <div class="file-item" onclick="showNewsDetail(${n.id})" style="cursor:pointer">
+          <div class="file-info">
+            <div class="file-icon">📰</div>
+            <div>
+              <div class="file-name">${n.title}</div>
+              <div class="file-meta">${n.source || '未知来源'} | ${n.publish_date || n.created_at}</div>
+            </div>
+          </div>
+          <button class="file-delete" onclick="event.stopPropagation(); deleteNews(${n.id})">删除</button>
+        </div>
+      `).join('');
+    }
+    
+    async function addNews() {
+      const title = document.getElementById('newsTitle').value.trim();
+      const content = document.getElementById('newsContent').value.trim();
+      const source = document.getElementById('newsSource').value.trim();
+      const publish_date = document.getElementById('newsDate').value.trim();
+      
+      if (!title) {
+        alert('请输入新闻标题');
+        return;
+      }
+      
+      try {
+        const res = await fetch(API_BASE + '/api/news', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({title, content, source, publish_date})
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          alert('新闻添加成功！');
+          loadNews();
+          // 清空表单
+          document.getElementById('newsTitle').value = '';
+          document.getElementById('newsContent').value = '';
+          document.getElementById('newsSource').value = '';
+          document.getElementById('newsDate').value = '';
+        } else {
+          alert(data.error);
+        }
+      } catch (err) {
+        alert('添加失败');
+      }
+    }
+    
+    async function searchNewsAI() {
+      const keyword = document.getElementById('searchKeyword').value.trim();
+      if (!keyword) {
+        alert('请输入搜索关键词');
+        return;
+      }
+      
+      const aiProvider = document.getElementById('newsAiProvider').value;
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '搜索中...';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/news/search', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({topic: keyword, aiProvider: aiProvider})
+        });
+        
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = '🔍 搜索新闻';
+        
+        if (data.success) {
+          alert('新闻搜索成功！已添加到新闻库');
+          loadNews();
+        } else {
+          alert('搜索失败: ' + (data.error || '未知错误'));
+          console.log('新闻搜索失败详情:', data);
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '🔍 搜索新闻';
+        alert('搜索失败: ' + err.message);
+        console.log('新闻搜索异常:', err);
+      }
+    }
+    
+    async function deleteNews(id) {
+      if (!confirm('确定删除这条新闻吗？')) return;
+      
+      try {
+        const res = await fetch(API_BASE + '/api/news/' + id, {method: 'DELETE'});
+        const data = await res.json();
+        if (data.success) {
+          loadNews();
+        } else {
+          alert(data.error);
+        }
+      } catch (err) {
+        alert('删除失败');
+      }
+    }
+    
+    async function showNewsDetail(newsId) {
+      try {
+        const res = await fetch(API_BASE + '/api/news');
+        const data = await res.json();
+        if (!data.success) {
+          alert('获取新闻失败');
+          return;
+        }
+        
+        const news = data.news.find(n => n.id === newsId);
+        if (!news) {
+          alert('新闻不存在');
+          return;
+        }
+        
+        // 显示新闻详情弹窗
+        const modalHtml = `
+          <div class="modal-overlay" onclick="closeNewsModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+              <div class="modal-header">
+                <h3>${news.title}</h3>
+                <button class="modal-close" onclick="closeNewsModal()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div class="news-detail-meta">
+                  <span>来源: ${news.source || '未知'}</span>
+                  <span>日期: ${news.publish_date || news.created_at}</span>
+                </div>
+                <div class="news-detail-content">${news.content.replace(/\n/g, '<br>')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // 创建弹窗
+        const existingModal = document.getElementById('newsDetailModal');
+        if (existingModal) existingModal.remove();
+        
+        const modal = document.createElement('div');
+        modal.id = 'newsDetailModal';
+        modal.innerHTML = modalHtml;
+        document.body.appendChild(modal);
+      } catch (err) {
+        alert('加载新闻详情失败');
+      }
+    }
+    
+    function closeNewsModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      const modal = document.getElementById('newsDetailModal');
+      if (modal) modal.remove();
+    }
+    
+    // ==================== RSS订阅 ====================
+    async function fetchRSS(source) {
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '⏳ 正在订阅...';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/news/rss/' + source, {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          alert(`成功从 ${data.source} 订阅 ${data.count} 条新闻！`);
+          loadNews();  // 刷新新闻列表
+        } else {
+          alert('订阅失败: ' + (data.error || '未知错误'));
+        }
+      } catch (err) {
+        alert('订阅失败: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+    
+    // ==================== 知识库 ====================
+    let currentKnowledgeFilter = '';
+    
+    async function loadKnowledge() {
+      try {
+        const category = currentKnowledgeFilter;
+        const url = category ? API_BASE + '/api/knowledge?category=' + encodeURIComponent(category) : API_BASE + '/api/knowledge';
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        const knowledgeList = document.getElementById('knowledgeList');
+        const knowledgeCount = document.getElementById('knowledgeCount');
+        
+        if (!data.success) {
+          alert(data.error || '加载失败');
+          return;
+        }
+        
+        knowledgeCount.textContent = '(' + data.knowledge.length + ')';
+        
+        if (data.knowledge.length === 0) {
+          knowledgeList.innerHTML = '<div class="empty-state"><div class="empty-icon">💡</div><p>暂无知识条目</p></div>';
+          return;
+        }
+        
+        const categoryIcons = {'概念': '📖', '理论': '📚', '案例': '📁', '人物': '👤', '事件': '📌'};
+        
+        knowledgeList.innerHTML = data.knowledge.map(k => `
+          <div class="file-item">
+            <div class="file-info">
+              <div class="file-icon">${categoryIcons[k.category] || '💡'}</div>
+              <div>
+                <div class="file-name">${k.title}</div>
+                <div class="file-meta">${k.category} | ${k.tags || '无标签'} | ${k.created_at}</div>
+              </div>
+            </div>
+            <button class="file-delete" onclick="deleteKnowledge(${k.id})">删除</button>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        alert('加载失败');
+      }
+    }
+    
+    function filterKnowledge(category) {
+      currentKnowledgeFilter = category;
+      loadKnowledge();
+    }
+    
+    async function addKnowledge() {
+      const category = document.getElementById('knowledgeCategory').value;
+      const title = document.getElementById('knowledgeTitle').value.trim();
+      const content = document.getElementById('knowledgeContent').value.trim();
+      const tags = document.getElementById('knowledgeTags').value.trim();
+      
+      if (!category || !title) {
+        alert('请选择分类并输入标题');
+        return;
+      }
+      
+      try {
+        const res = await fetch(API_BASE + '/api/knowledge', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({category, title, content, tags})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('保存成功！');
+          document.getElementById('knowledgeTitle').value = '';
+          document.getElementById('knowledgeContent').value = '';
+          document.getElementById('knowledgeTags').value = '';
+          loadKnowledge();
+        } else {
+          alert(data.error);
+        }
+      } catch (err) {
+        alert('保存失败');
+      }
+    }
+    
+    async function deleteKnowledge(id) {
+      if (!confirm('确定删除这条知识吗？')) return;
+      
+      try {
+        const res = await fetch(API_BASE + '/api/knowledge/' + id, {method: 'DELETE'});
+        const data = await res.json();
+        if (data.success) {
+          loadKnowledge();
+        } else {
+          alert(data.error);
+        }
+      } catch (err) {
+        alert('删除失败');
+      }
+    }
+    
+    // ==================== 论文辅助 ====================
+    async function loadOutlines() {
+      try {
+        const res = await fetch(API_BASE + '/api/outline');
+        const data = await res.json();
+        
+        const outlineList = document.getElementById('outlineList');
+        const outlineCount = document.getElementById('outlineCount');
+        
+        if (!data.success) {
+          return;
+        }
+        
+        outlineCount.textContent = '(' + (data.outlines ? data.outlines.length : 0) + ')';
+        
+        if (!data.outlines || data.outlines.length === 0) {
+          outlineList.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>暂无已生成的大纲</p></div>';
+          return;
+        }
+        
+        outlineList.innerHTML = data.outlines.map(o => `
+          <div class="file-item">
+            <div class="file-info">
+              <div class="file-icon">📝</div>
+              <div>
+                <div class="file-name">${o.title}</div>
+                <div class="file-meta">主题: ${o.topic} | ${o.created_at}</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    async function generateOutline() {
+      const topic = document.getElementById('outlineTopic').value.trim();
+      const outlineType = document.getElementById('outlineType').value;
+      const aiProvider = document.getElementById('outlineAiProvider').value;
+      
+      if (!topic) {
+        alert('请输入研究主题');
+        return;
+      }
+      
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ 生成中...';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/outline', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({topic, outlineType, aiProvider})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          document.getElementById('outlineResultCard').style.display = 'block';
+          document.getElementById('outlineResult').textContent = data.outline;
+          loadOutlines();
+        } else {
+          alert(data.error || '生成失败');
+        }
+      } catch (err) {
+        alert('生成失败');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ 生成大纲';
+      }
+    }
+    
+    // ==================== 数据可视化分析 ====================
+    async function analyzeDocuments() {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ 分析中...';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/analyze/documents', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          document.getElementById('analysisResultCard').style.display = 'block';
+          document.getElementById('analysisResult').textContent = data.analysis;
+        } else {
+          alert(data.error || '分析失败');
+        }
+      } catch (err) {
+        alert('分析失败');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 开始分析';
+      }
+    }
+    
+    // ==================== 文献选择和分析 ====================
+    let selectedDocIds = [];
+    
+    async function loadDocSelectList() {
+      try {
+        const res = await fetch(API_BASE + '/api/documents/list', {credentials: 'same-origin'});
+        console.log('文献列表响应状态:', res.status);
+        
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error('获取文献列表失败:', res.status, errText);
+          return;
+        }
+        
+        const data = await res.json();
+        console.log('文献列表数据:', JSON.stringify(data));
+        console.log('documents长度:', data.documents ? data.documents.length : 'undefined');
+        console.log('documents内容:', data.documents);
+        
+        const container = document.getElementById('docSelectList');
+        
+        console.log('data.success:', data.success);
+        console.log('data.documents:', data.documents);
+        
+        if (!data.success || !data.documents || data.documents.length === 0) {
+          container.innerHTML = '<div style="color: #999; text-align: center;">暂无文献，请先上传文献</div>';
+          return;
+        }
+        
+        selectedDocIds = data.documents.map(d => d.id); // 默认全选
+        
+        container.innerHTML = data.documents.map(d => `
+          <label style="display: block; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;">
+            <input type="checkbox" checked data-doc-id="${d.id}" onchange="updateSelectedDocs()" style="margin-right: 8px;">
+            <span>${d.title}</span>
+            <small style="color: #999; margin-left: 10px;">${d.created_at}</small>
+          </label>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    function updateSelectedDocs() {
+      selectedDocIds = Array.from(document.querySelectorAll('#docSelectList input:checked'))
+        .map(cb => parseInt(cb.dataset.docId));
+    }
+    
+    function selectAllDocs() {
+      document.querySelectorAll('#docSelectList input').forEach(cb => cb.checked = true);
+      updateSelectedDocs();
+    }
+    
+    function selectNoneDocs() {
+      document.querySelectorAll('#docSelectList input').forEach(cb => cb.checked = false);
+      updateSelectedDocs();
+    }
+    
+    async function analyzeSelectedDocs() {
+      if (selectedDocIds.length === 0) {
+        alert('请至少选择一篇文献');
+        return;
+      }
+      
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ 分析中...';
+      
+      const aiProvider = document.getElementById('docAnalysisAiProvider').value;
+      
+      try {
+        const res = await fetch(API_BASE + '/api/analyze/documents', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({docIds: selectedDocIds, aiProvider: aiProvider})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          console.log('分析结果:', data);
+          console.log('analysis类型:', typeof data.analysis);
+          document.getElementById('docAnalysisResultCard').style.display = 'block';
+          document.getElementById('docAnalysisResult').textContent = typeof data.analysis === 'object' ? JSON.stringify(data.analysis, null, 2) : data.analysis;
+        } else {
+          alert(data.error || '分析失败');
+        }
+      } catch (err) {
+        alert('分析失败');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 分析所选文献';
+      }
+    }
+    
+    // ==================== 文献精读 ====================
+    let selectedReadingDocId = null;
+    
+    async function loadReadingDocList() {
+      try {
+        const res = await fetch(API_BASE + '/api/documents/list', {credentials: 'same-origin'});
+        const data = await res.json();
+        
+        const container = document.getElementById('readingDocList');
+        
+        if (!data.success || !data.documents || data.documents.length === 0) {
+          container.innerHTML = '<div style="color: #999; text-align: center;">暂无文献，请先上传文献</div>';
+          return;
+        }
+        
+        container.innerHTML = data.documents.map(d => `
+          <label style="display: block; padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;">
+            <input type="radio" name="readingDoc" value="${d.id}" style="margin-right: 8px;">
+            <span style="font-weight: 500;">${d.title}</span>
+            <small style="color: #999; margin-left: 10px;">${d.username || ''} | ${d.created_at}</small>
+          </label>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    async function startDocumentReading() {
+      const selected = document.querySelector('input[name="readingDoc"]:checked');
+      if (!selected) {
+        alert('请选择要精读的文献');
+        return;
+      }
+      
+      selectedReadingDocId = parseInt(selected.value);
+      const btn = document.getElementById('startReadingBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ 分析中...';
+      
+      const aiProvider = document.getElementById('readingAiProvider').value;
+      
+      try {
+        const res = await fetch(API_BASE + '/api/analyze/document/' + selectedReadingDocId, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({aiProvider: aiProvider})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          document.getElementById('readingResultCard').style.display = 'block';
+          document.getElementById('readingResult').textContent = data.analysis;
+          alert('精读完成！已自动保存到知识库');
+        } else {
+          alert(data.error || '分析失败');
+        }
+      } catch (err) {
+        alert('分析失败: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📖 开始精读分析';
+      }
+    }
+    
+    // ==================== 历史 ====================
+    
+    async function loadHistory() {
+      try {
+        const res = await fetch(API_BASE + '/api/analyses');
+        const data = await res.json();
+        
+        const historyList = document.getElementById('historyList');
+        
+        if (!data.analyses || data.analyses.length === 0) {
+          historyList.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>暂无记录</p></div>';
+          return;
+        }
+        
+        const typeNames = {
+          general: '综合分析', history: '历史背景', actors: '参与者',
+          counterterror: '反恐研究', security: '国家安全', trends: '趋势预测'
+        };
+        
+        historyList.innerHTML = data.analyses.map(item => `
+          <div class="file-item" onclick="viewAnalysisDetail(${item.id})" style="cursor: pointer;">
+            <div class="file-info">
+              <div class="file-icon">🔍</div>
+              <div>
+                <div class="file-name">${item.topic}</div>
+                <div class="file-meta">${item.analysis_type} | ${item.sources} | ${item.created_at}</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    async function viewAnalysisDetail(analysisId) {
+      const detailCard = document.getElementById('historyDetailCard');
+      const loading = document.getElementById('historyDetailLoading');
+      const infoDiv = document.getElementById('historyDetailInfo');
+      const resultDiv = document.getElementById('historyDetailResult');
+      
+      detailCard.style.display = 'block';
+      loading.style.display = 'block';
+      infoDiv.style.display = 'none';
+      resultDiv.innerHTML = '';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/analysis/' + analysisId);
+        const data = await res.json();
+        
+        loading.style.display = 'none';
+        
+        if (data.success) {
+          const a = data.analysis;
+          document.getElementById('detailTopic').textContent = a.topic;
+          document.getElementById('detailType').textContent = a.analysis_type;
+          document.getElementById('detailSources').textContent = a.sources;
+          document.getElementById('detailTime').textContent = a.created_at;
+          infoDiv.style.display = 'block';
+          
+          resultDiv.textContent = a.result || '无分析结果';
+          
+          // 如果有对话历史，显示在后面
+          if (data.conversations && data.conversations.length > 0) {
+            resultDiv.innerHTML += '\n\n--- 对话历史 ---\n\n';
+            data.conversations.forEach(conv => {
+              const label = conv.role === 'user' ? '【追问】' : '【回答】';
+              resultDiv.innerHTML += `${label} ${conv.content}\n\n`;
+            });
+          }
+        } else {
+          resultDiv.textContent = '加载失败: ' + (data.error || '未知错误');
+        }
+      } catch (err) {
+        loading.style.display = 'none';
+        resultDiv.textContent = '加载失败: ' + err.message;
+      }
+    }
+    
+    function closeHistoryDetail() {
+      document.getElementById('historyDetailCard').style.display = 'none';
+    }
+    
+    // ==================== 追问功能 ====================
+    let currentAnalysisId = null;
+    
+    function showChatSection(analysisId) {
+      currentAnalysisId = analysisId;
+      document.getElementById('chatSection').style.display = 'block';
+      loadChatHistory(analysisId);
+    }
+    
+    async function loadChatHistory(analysisId) {
+      try {
+        const res = await fetch(API_BASE + '/api/chat/' + analysisId);
+        const data = await res.json();
+        
+        const chatMessages = document.getElementById('chatMessages');
+        if (data.success && data.history.length > 0) {
+          chatMessages.innerHTML = data.history.map(msg => `
+            <div style="margin-bottom: 10px; padding: 10px; border-radius: 8px; ${msg.role === 'user' ? 'background: #e3f2fd; margin-left: 20px;' : 'background: #f5f5f5; margin-right: 20px;'}">
+              <strong>${msg.role === 'user' ? '你' : 'AI助手'}：</strong>
+              <div style="margin-top: 5px;">${msg.content}</div>
+            </div>
+          `).join('');
+        } else {
+          chatMessages.innerHTML = '<div style="color: #666; text-align: center;">可以开始追问了</div>';
+        }
+      } catch (err) {
+        console.log('加载对话历史失败');
+      }
+    }
+    
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const question = input.value.trim();
+      if (!question || !currentAnalysisId) return;
+      
+      const aiProvider = document.getElementById('aiProvider').value;
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '思考中...';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            analysisId: currentAnalysisId,
+            question: question,
+            aiProvider: aiProvider
+          })
+        });
+        
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = '发送';
+        
+        if (data.success) {
+          input.value = '';
+          loadChatHistory(currentAnalysisId);
+        } else {
+          alert(data.error || '追问失败');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '发送';
+        alert('网络错误');
+      }
+    }
+    
+    // 回车发送
+    document.getElementById('chatInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') sendChat();
+    });
+    
+    // ==================== 初始化 ====================
+    
+    async function checkAuth() {
+      try {
+        const res = await fetch(API_BASE + '/api/user/info');
+        const data = await res.json();
+        if (data.logged_in) {
+          currentUser = data;
+          showApp();
+          loadDocuments();
+        }
+      } catch (err) {
+        console.log('未登录');
+      }
+    }
+    
+    // ==================== 模型对比 ====================
+    async function loadCompareDocList() {
+      try {
+        const res = await fetch(API_BASE + '/api/documents/list');
+        const data = await res.json();
+        const list = document.getElementById('compareDocList');
+        if (!data.documents || data.documents.length === 0) {
+          list.innerHTML = '<div style="color: #999;">暂无文献</div>';
+          return;
+        }
+        list.innerHTML = data.documents.map(d => `
+          <label style="display: block; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;">
+            <input type="checkbox" value="${d.id}" style="margin-right: 8px;">
+            <span>${d.title}</span>
+          </label>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    async function compareModels() {
+      const topic = document.getElementById('compareTopic').value.trim();
+      if (!topic) { alert('请输入分析主题'); return; }
+      
+      const checkboxes = document.querySelectorAll('#compareDocList input:checked');
+      const docIds = Array.from(checkboxes).map(c => parseInt(c.value));
+      
+      const selectedModels = [];
+      document.querySelectorAll('input[value="silicon"], input[value="silicon_r1"], input[value="silicon_pro"], input[value="qwen"]').forEach(cb => {
+        if (cb.checked) selectedModels.push(cb.value);
+      });
+      
+      if (selectedModels.length === 0) { alert('请选择至少一个模型'); return; }
+      
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ 分析中...';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/analyze/compare', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({topic, models: selectedModels, documents: docIds})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          const resultsDiv = document.getElementById('compareResults');
+          resultsDiv.innerHTML = data.results.map(r => `
+            <div class="card" style="margin-top: 15px;">
+              <div class="card-title">${r.name || r.model}</div>
+              <pre style="white-space: pre-wrap; background: #f7fafc; padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto;">${r.analysis}</pre>
+            </div>
+          `).join('');
+        } else {
+          alert(data.error || '分析失败');
+        }
+      } catch (err) {
+        alert('分析失败: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔬 开始对比分析';
+      }
+    }
+    
+    // ==================== 批量分析 ====================
+    async function loadBatchDocList() {
+      try {
+        const res = await fetch(API_BASE + '/api/documents/list');
+        const data = await res.json();
+        const list = document.getElementById('batchDocList');
+        if (!data.documents || data.documents.length === 0) {
+          list.innerHTML = '<div style="color: #999;">暂无文献</div>';
+          return;
+        }
+        list.innerHTML = data.documents.map(d => `
+          <label style="display: block; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;">
+            <input type="checkbox" name="batchDoc" value="${d.id}" style="margin-right: 8px;">
+            <span>${d.title}</span>
+          </label>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    function selectAllBatchDocs() {
+      document.querySelectorAll('input[name="batchDoc"]').forEach(cb => cb.checked = true);
+    }
+    
+    function selectNoneBatchDocs() {
+      document.querySelectorAll('input[name="batchDoc"]').forEach(cb => cb.checked = false);
+    }
+    
+    async function batchAnalyze() {
+      const checkboxes = document.querySelectorAll('input[name="batchDoc"]:checked');
+      const docIds = Array.from(checkboxes).map(c => parseInt(c.value));
+      
+      if (docIds.length === 0) { alert('请选择要分析的文献'); return; }
+      
+      const aiProvider = document.getElementById('batchAiProvider').value;
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ 分析中...';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/analyze/batch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({documentIds: docIds, aiProvider})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          const resultsDiv = document.getElementById('batchResults');
+          resultsDiv.innerHTML = data.results.map(r => `
+            <div class="card" style="margin-top: 10px; padding: 10px;">
+              <div style="font-weight: 500;">${r.title}</div>
+              <div style="color: ${r.status === 'success' ? 'green' : 'orange'}; font-size: 12px; margin-top: 5px;">
+                ${r.status === 'success' ? '✓ 分析成功' : '✗ ' + r.reason}
+              </div>
+              ${r.analysis ? `<pre style="white-space: pre-wrap; font-size: 12px; margin-top: 10px; max-height: 150px; overflow-y: auto;">${r.analysis}</pre>` : ''}
+            </div>
+          `).join('');
+        } else {
+          alert(data.error || '分析失败');
+        }
+      } catch (err) {
+        alert('分析失败: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📚 开始批量分析';
+      }
+    }
+    
+    // ==================== 导出报告 ====================
+    let exportAnalyses = [];
+    let exportDocuments = [];
+    
+    async function loadExportData() {
+      const exportType = document.querySelector('input[name="exportType"]:checked').value;
+      const list = document.getElementById('exportList');
+      
+      if (exportType === 'analyses') {
+        const res = await fetch(API_BASE + '/api/analyses');
+        const data = await res.json();
+        exportAnalyses = data.analyses || [];
+        list.innerHTML = exportAnalyses.map(a => `
+          <label style="display: block; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;">
+            <input type="checkbox" name="exportItem" value="${a.id}" style="margin-right: 8px;">
+            <span>${a.topic}</span>
+            <small style="color: #999;"> | ${a.analysis_type}</small>
+          </label>
+        `).join('') || '<div style="color: #999;">暂无分析记录</div>';
+      } else {
+        const res = await fetch(API_BASE + '/api/documents/list');
+        const data = await res.json();
+        exportDocuments = data.documents || [];
+        list.innerHTML = exportDocuments.map(d => `
+          <label style="display: block; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;">
+            <input type="checkbox" name="exportItem" value="${d.id}" style="margin-right: 8px;">
+            <span>${d.title}</span>
+          </label>
+        `).join('') || '<div style="color: #999;">暂无文献</div>';
+      }
+    }
+    
+    function selectAllExport() {
+      document.querySelectorAll('input[name="exportItem"]').forEach(cb => cb.checked = true);
+    }
+    
+    function selectNoneExport() {
+      document.querySelectorAll('input[name="exportItem"]').forEach(cb => cb.checked = false);
+    }
+    
+    async function exportReport() {
+      const checkboxes = document.querySelectorAll('input[name="exportItem"]:checked');
+      const ids = Array.from(checkboxes).map(c => parseInt(c.value));
+      
+      if (ids.length === 0) { alert('请选择要导出的项目'); return; }
+      
+      const exportType = document.querySelector('input[name="exportType"]:checked').value;
+      
+      try {
+        const res = await fetch(API_BASE + '/api/export/report', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({analysisIds: exportType === 'analyses' ? ids : [], documentIds: exportType === 'documents' ? ids : [], type: exportType})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          // 创建下载
+          const blob = new Blob([data.report], {type: 'text/markdown'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = data.filename;
+          a.click();
+          URL.revokeObjectURL(url);
+          alert('导出成功！');
+        } else {
+          alert(data.error || '导出失败');
+        }
+      } catch (err) {
+        alert('导出失败: ' + err.message);
+      }
+    }
+    
+    // ==================== 收藏功能 ====================
+    async function loadFavorites() {
+      try {
+        const res = await fetch(API_BASE + '/api/favorites');
+        const data = await res.json();
+        const list = document.getElementById('favoritesList');
+        
+        if (!data.favorites || data.favorites.length === 0) {
+          list.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">暂无收藏</div>';
+          return;
+        }
+        
+        list.innerHTML = data.favorites.map(f => `
+          <div class="card" style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span style="font-weight: 500;">${f.title}</span>
+                <span style="font-size: 12px; color: #999; margin-left: 10px;">${f.type === 'analysis' ? '分析' : '文献'}</span>
+              </div>
+              <button class="btn btn-small" onclick="deleteFavorite(${f.id})">删除</button>
+            </div>
+            ${f.note ? `<div style="margin-top: 10px; color: #666; font-size: 14px;">${f.note}</div>` : ''}
+            <div style="font-size: 12px; color: #999; margin-top: 5px;">${f.createdAt}</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    
+    async function addFavorite(itemType, itemId, title) {
+      try {
+        const res = await fetch(API_BASE + '/api/favorites', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({itemType, itemId, title, note: ''})
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('收藏成功！');
+        } else {
+          alert(data.error || '收藏失败');
+        }
+      } catch (err) {
+        alert('收藏失败: ' + err.message);
+      }
+    }
+    
+    async function deleteFavorite(favId) {
+      if (!confirm('确定要取消收藏吗？')) return;
+      
+      try {
+        const res = await fetch(API_BASE + '/api/favorites?id=' + favId, {method: 'DELETE'});
+        const data = await res.json();
+        if (data.success) {
+          loadFavorites();
+        } else {
+          alert(data.error || '取消收藏失败');
+        }
+      } catch (err) {
+        alert('取消收藏失败: ' + err.message);
+      }
+    }
+    
+    // ==================== 热点追踪 ====================
+    async function trackTrends() {
+      const topicsText = document.getElementById('trackTopics').value.trim();
+      if (!topicsText) { alert('请输入要追踪的主题'); return; }
+      
+      const topics = topicsText.split('\n').map(t => t.trim()).filter(t => t);
+      if (topics.length === 0) { alert('请输入有效的主题'); return; }
+      
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ 追踪中...';
+      
+      try {
+        const res = await fetch(API_BASE + '/api/trends/track', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({topics})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('追踪完成！');
+          loadTrendsHistory();
+        } else {
+          alert(data.error || '追踪失败');
+        }
+      } catch (err) {
+        alert('追踪失败: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📡 开始追踪';
+      }
+    }
+    
+    async function loadTrendsHistory() {
+      try {
+        const res = await fetch(API_BASE + '/api/trends/history');
+        const data = await res.json();
+        const list = document.getElementById('trendsHistory');
+        
+        if (!data.history || data.history.length === 0) {
+          list.innerHTML = '<div style="color: #999; text-align: center;">暂无追踪记录</div>';
+          return;
+        }
+        
+        list.innerHTML = data.history.map(h => `
+          <div class="card" style="margin-bottom: 10px;">
+            <div style="font-weight: 500; margin-bottom: 10px;">🎯 ${h.topic}</div>
+            <pre style="white-space: pre-wrap; font-size: 13px; max-height: 200px; overflow-y: auto;">${h.analysis}</pre>
+            <div style="font-size: 12px; color: #999; margin-top: 10px;">${h.createdAt}</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
