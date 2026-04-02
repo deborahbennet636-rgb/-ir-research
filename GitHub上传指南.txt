@@ -1,0 +1,103 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                    GitHub 发布指南                                     ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+一、创建GitHub仓库
+══════════════════════════════════════════════════════════════════════
+
+  1. 登录 GitHub：https://github.com
+
+  2. 点击右上角「+」→「New repository」
+  
+  3. 填写仓库信息：
+     - Repository name: ir-research-system（或你喜欢的名字）
+     - Description: 基于AI的国际关系研判系统
+     - 选择 Public（公开）或 Private（私有）
+     - 不要勾选「Add a README file」（我们已有）
+     - 不要选择 .gitignore（我们已有）
+  
+  4. 点击「Create repository」
+
+
+二、上传代码
+══════════════════════════════════════════════════════════════════════
+
+  方法A：命令行上传（推荐）
+  ─────────────────────────────────────
+  
+  # 进入项目目录
+  cd ir-research-github
+
+  # 初始化Git
+  git init
+
+  # 添加所有文件（会忽略config.py和.gitignore中的文件）
+  git add .
+
+  # 提交
+  git commit -m "Initial commit: 国际关系研判系统 v1.0"
+
+  # 添加远程仓库（替换YOUR_USERNAME为你的GitHub用户名）
+  git remote add origin https://github.com/YOUR_USERNAME/ir-research-system.git
+
+  # 推送
+  git branch -M main
+  git push -u origin main
+  
+
+  方法B：网页上传
+  ─────────────────────────────────────
+  
+  1. 在仓库页面点击「uploading an existing file」
+  
+  2. 拖拽所有文件到上传区域
+  
+  3. 点击「Commit changes」
+
+
+三、验证仓库
+══════════════════════════════════════════════════════════════════════
+
+  上传成功后，检查：
+
+  1. README.md 是否正确显示
+  2. config_example.py 是否存在
+  3. config.py 是否被忽略（不应该存在）
+
+
+四、发布Release（可选）
+══════════════════════════════════════════════════════════════════════
+
+  1. 点击仓库右上角「Release」→「Draft a new release」
+
+  2. 填写版本信息：
+     - Tag version: v1.0.0
+     - Release title: v1.0.0 正式版
+     - Description: 首发版本
+
+  3. 点击「Publish release」
+
+
+五、分享给你的朋友
+══════════════════════════════════════════════════════════════════════
+
+  分享链接格式：
+  https://github.com/YOUR_USERNAME/ir-research-system
+
+  朋友使用流程：
+  1. 点击「Code」→「Download ZIP」下载
+  2. 解压后双击 run.bat
+  3. 按提示配置 API 密钥
+
+
+六、后续更新
+══════════════════════════════════════════════════════════════════════
+
+  修改代码后，执行：
+
+  git add .
+  git commit -m "更新说明"
+  git push
+
+
+══════════════════════════════════════════════════════════════════════
