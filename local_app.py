@@ -1223,7 +1223,14 @@ def chat():
     
     # 调用AI
     system_prompt = SYSTEM_PROMPTS.get(analysis_type, SYSTEM_PROMPTS['general'])
-    result = call_ai(f"{context}\n\n请回答用户的问题：{question}", system_prompt, ai_provider)
+    format_instruction = """
+请用清晰易读的格式回答：
+1. 使用适当的换行和段落分隔
+2. 每个要点单独成段
+3. 使用数字列表或符号列表组织内容
+4. 涉及指标对比时，使用表格或分行列出
+5. 关键结论加粗或单独标注"""
+    result = call_ai(f"{context}\n\n请回答用户的问题：{question}\n{format_instruction}", system_prompt, ai_provider)
     
     if 'error' in result:
         return jsonify({"success": False, "error": result['error']}), 500
